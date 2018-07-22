@@ -1,7 +1,7 @@
 # tiny unobtrusive IoC container (240 bytes gzip)
 [![NPM](https://nodei.co/npm/basic-ioc-container.png?compact=true)](https://nodei.co/npm/basic-ioc-container/)
 
-a tiny (250 bytes gzip), unobtrusive IoC container that lazily instantiates
+a tiny (<250 bytes gzip), unobtrusive IoC container that lazily instantiates
 any type from standard factories.
 
 # features
@@ -21,7 +21,7 @@ without any additional tools.
 # <a name="example"></a> Example
 see the full [example](./example/index.tsx) in this directory.<br/>
 run the example in your browser locally with `npm run example`
-or [online here](https://cdn.rawgit.com/ZenyWay/basic-ioc-container/v0.1.0/example/index.html).
+or [online here](https://cdn.rawgit.com/ZenyWay/basic-ioc-container/v0.2.1/example/index.html).
 
 `index.ts`:
 ```tsx
@@ -29,7 +29,7 @@ import container from 'basic-ioc-container'
 import serviceFactory, { Service, Db } from './service'
 import dbFactory from './db'
 import log from './console'
-const { version } = require('../package.json')
+const { version: VERSION } = require('../package.json')
 const DB_NAME = 'app-store'
 
 interface Container {
@@ -44,23 +44,20 @@ interface Container {
 const use = container<Container>()
 // register factories from a map
 use({
-  version: () => version,
+  version: () => VERSION,
   service: serviceFactory
 })
 // or register factories individually
 use('db', dbFactory)
 use('dbname', () => DB_NAME)
+
 // each of the above returns the container object, as well as:
-// const context = use()
+const { version, service } = use()
 
-// register the entry point without a key:
-// it is called immediately with the POJO container object.
-use(function app({ version, service }) {
-  log('version:')(version)
+log('version:')(version)
 
-  service.save({ id: 'doc', foo: 'foo' })
-  .then(log('save:'))
-})
+service.save({ id: 'doc', foo: 'foo' })
+.then(log('save:'))
 ```
 
 `service.ts`:<br/>

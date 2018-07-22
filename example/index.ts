@@ -17,7 +17,7 @@ import container from '../src'
 import serviceFactory, { Service, Db } from './service'
 import dbFactory from './db'
 import log from './console'
-const { version } = require('../package.json')
+const { version: VERSION } = require('../package.json')
 const DB_NAME = 'app-store'
 
 interface Container {
@@ -32,19 +32,17 @@ interface Container {
 const use = container<Container>()
 // register factories from a map
 use({
-  version: () => version,
+  version: () => VERSION,
   service: serviceFactory
 })
 // or register factories individually
 use('db', dbFactory)
 use('dbname', () => DB_NAME)
 
-// register the entry point without a key:
-// it is called immediately with the container,
-// a plain javascript object from which it can deconstruct its dependencies
-use(function app({ version, service }) {
-  log('version:')(version)
+// each of the above returns the container object, as well as:
+const { version, service } = use()
 
-  service.save({ id: 'doc', foo: 'foo' })
-  .then(log('save:'))
-})
+log('version:')(version)
+
+service.save({ id: 'doc', foo: 'foo' })
+.then(log('save:'))
