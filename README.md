@@ -1,7 +1,7 @@
 # tiny unobtrusive IoC container (240 bytes gzip)
 [![NPM](https://nodei.co/npm/basic-ioc-container.png?compact=true)](https://nodei.co/npm/basic-ioc-container/)
 
-a tiny (240 bytes gzip), unobtrusive IoC container that lazily instantiates
+a tiny (250 bytes gzip), unobtrusive IoC container that lazily instantiates
 any type from standard factories.
 
 # features
@@ -50,10 +50,11 @@ use({
 // or register factories individually
 use('db', dbFactory)
 use('dbname', () => DB_NAME)
+// each of the above returns the container object, as well as:
+// const context = use()
 
 // register the entry point without a key:
-// it is called immediately with the container,
-// a plain javascript object from which it can deconstruct its dependencies
+// it is called immediately with the POJO container object.
 use(function app({ version, service }) {
   log('version:')(version)
 
@@ -131,9 +132,10 @@ export default function ({ dbname }): Db {
 
 ```ts
 export default function <C>(container?: Partial<C>): {
-  (factories: { [key: string]: (deps: Partial<C>) => any }): void
-  <S>(key: string, factory: (deps: Partial<C>) => S): void
-  <S>(factory: (deps: Partial<C>) => S): void
+  (): Partial<C>
+  (factories: { [key: string]: (deps: Partial<C>) => any }): Partial<C>
+  <S>(key: string, factory: (deps: Partial<C>) => S): Partial<C>
+  <S>(factory: (deps: Partial<C>) => S): S
 }
 ```
 

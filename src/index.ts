@@ -17,19 +17,19 @@
 export default function <C>(container = Object.create(null) as Partial<C>) {
   return register
 
+  function register (): Partial<C>
   function register (
     factories: { [key: string]: (deps: Partial<C>) => any }
-  ): void
-  function register <S>(key: string, factory: (deps: Partial<C>) => S): void
-  function register <S>(factory: (deps: Partial<C>) => S): void
+  ): Partial<C>
+  function register <S>(key: string, factory: (deps: Partial<C>) => S): Partial<C>
+  function register <S>(factory: (deps: Partial<C>) => S): S
   function register <S>(
-    arg: string|((deps: Partial<C>) => S)|{ [key: string]: (deps: Partial<C>) => any },
+    arg?: string|((deps: Partial<C>) => S)|{ [key: string]: (deps: Partial<C>) => any },
     factory?: (deps: Partial<C>) => S
-  ): void {
+  ) {
     switch (typeof arg) {
       case 'function':
-        (arg as (deps: Partial<C>) => S)(container)
-        break
+        return (arg as (deps: Partial<C>) => S)(container)
       case 'string':
         let instance: S
         Object.defineProperties(container, {
@@ -41,10 +41,12 @@ export default function <C>(container = Object.create(null) as Partial<C>) {
           }
         })
         break
-      default:
+      case 'object':
         Object.keys(arg).forEach(function (key) {
           register(key, arg[key])
         })
+      default:
     }
+    return container
   }
 }
