@@ -34,6 +34,8 @@ export default function <C>(container = Object.create(null) as Partial<C>) {
         let instance: S
         Object.defineProperties(container, {
           [arg as string]: {
+            configurable: true,
+            enumerable: true,
             get(): S {
               instance = instance || factory(container)
               return instance

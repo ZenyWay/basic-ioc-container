@@ -32,7 +32,7 @@ interface Container {
 const use = container<Container>()
 // register factories from a map
 use({
-  version: () => VERSION,
+  version: () => VERSION, // register a constant
   service: serviceFactory
 })
 // or register factories individually
@@ -40,9 +40,10 @@ use('db', dbFactory)
 use('dbname', () => DB_NAME)
 
 // each of the above returns the container object, as well as:
-const { version, service } = use()
-
-log('version:')(version)
+const { service } = use() // pull service from container
 
 service.save({ id: 'doc', foo: 'foo' })
 .then(log('save:'))
+
+// alternatively, inject directly (without registering):
+use(({ version }) => log('version:')(version))

@@ -1,7 +1,7 @@
-# tiny unobtrusive IoC container (240 bytes gzip)
+# tiny unobtrusive IoC container (<270 bytes gzip)
 [![NPM](https://nodei.co/npm/basic-ioc-container.png?compact=true)](https://nodei.co/npm/basic-ioc-container/)
 
-a tiny (<250 bytes gzip), unobtrusive IoC container that lazily instantiates
+a tiny (<270 bytes gzip), unobtrusive IoC container that lazily instantiates
 any type from standard factories.
 
 # features
@@ -16,12 +16,12 @@ does not stringify factories to extract dependency names.
 * simply mock dependencies in tests, regardless of test framework,
 without any additional tools.
 * typescript support.
-* tiny: 240 bytes gzip.
+* tiny: less than 270 bytes gzip.
 
 # <a name="example"></a> Example
 see the full [example](./example/index.tsx) in this directory.<br/>
 run the example in your browser locally with `npm run example`
-or [online here](https://cdn.rawgit.com/ZenyWay/basic-ioc-container/v0.2.1/example/index.html).
+or [online here](https://cdn.rawgit.com/ZenyWay/basic-ioc-container/v0.2.2/example/index.html).
 
 `index.ts`:
 ```tsx
@@ -44,7 +44,7 @@ interface Container {
 const use = container<Container>()
 // register factories from a map
 use({
-  version: () => VERSION,
+  version: () => VERSION, // register a constant
   service: serviceFactory
 })
 // or register factories individually
@@ -52,12 +52,13 @@ use('db', dbFactory)
 use('dbname', () => DB_NAME)
 
 // each of the above returns the container object, as well as:
-const { version, service } = use()
-
-log('version:')(version)
+const { service } = use() // pull service from container
 
 service.save({ id: 'doc', foo: 'foo' })
 .then(log('save:'))
+
+// alternatively, inject directly (without registering):
+use(({ version }) => log('version:')(version))
 ```
 
 `service.ts`:<br/>
