@@ -1,6 +1,6 @@
 {
   "name": "basic-ioc-container",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "a tiny (<270 bytes gzip), unobtrusive IoC container that lazily instantiates any type from standard factories.",
   "main": "dist/index.min.js",
   "typings": "dist/index.d.ts",

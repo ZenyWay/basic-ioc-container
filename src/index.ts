@@ -14,29 +14,41 @@
  * Limitations under the License.
  */
 ;
-export default function <C>(container = Object.create(null) as Partial<C>) {
+export type IoCFactory<C extends object, K extends keyof C> =
+  (deps?: Partial<C>) => C[K]
+export type IoCFactoryMap<C extends object> =
+  { [K in keyof C]: IoCFactory<C,K> }
+
+export default function <C extends object>(
+  container = Object.create(null) as Partial<C>
+) {
   return register
 
   function register (): Partial<C>
-  function register (
-    factories: { [key: string]: (deps: Partial<C>) => any }
+  function register <K extends keyof C>(
+    key: K,
+    factory: IoCFactory<C,K>
   ): Partial<C>
-  function register <S>(key: string, factory: (deps: Partial<C>) => S): Partial<C>
-  function register <S>(factory: (deps: Partial<C>) => S): S
-  function register <S>(
-    arg?: string|((deps: Partial<C>) => S)|{ [key: string]: (deps: Partial<C>) => any },
-    factory?: (deps: Partial<C>) => S
+  function register (
+    factories: Partial<IoCFactoryMap<C>>
+  ): Partial<C>
+  function register <T>(
+    factory: (deps?: Partial<C>) => T
+  ): T
+  function register <K extends keyof C>(
+    arg?: K | Partial<IoCFactoryMap<C>> | ((deps?: Partial<C>) => any),
+    factory?: IoCFactory<C,K>
   ) {
     switch (typeof arg) {
       case 'function':
-        return (arg as (deps: Partial<C>) => S)(container)
+        return (arg as (deps?: Partial<C>) => any)(container)
       case 'string':
-        let instance: S
+        let instance: C[K]
         Object.defineProperties(container, {
           [arg as string]: {
             configurable: true,
             enumerable: true,
-            get(): S {
+            get(): C[K] {
               instance = instance || factory(container)
               return instance
             }
@@ -44,8 +56,8 @@ export default function <C>(container = Object.create(null) as Partial<C>) {
         })
         break
       case 'object':
-        Object.keys(arg).forEach(function (key) {
-          register(key, arg[key])
+        Object.keys(arg).forEach(function (key: keyof C) {
+          register(key, (arg as Partial<IoCFactoryMap<C>>)[key])
         })
       default:
     }

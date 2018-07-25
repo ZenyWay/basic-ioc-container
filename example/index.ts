@@ -14,12 +14,13 @@
  */
 ;
 import container from '../src'
-import serviceFactory, { Service, Db } from './service'
-import dbFactory from './db'
+import serviceFactory, { Service } from './service'
+import dbFactory, { Db } from './db'
 import log from './console'
 const { version: VERSION } = require('../package.json')
 const DB_NAME = 'app-store'
 
+// declare the shape of the IoC container
 interface Container {
   version: string
   service: Service
@@ -27,7 +28,7 @@ interface Container {
   dbname: string
 }
 
-// instantiate a container
+// instantiate a container of the above shape,
 // and retrieve a corresponding factory registration function
 const use = container<Container>()
 // register factories from a map

@@ -5,33 +5,34 @@ a tiny (<270 bytes gzip), unobtrusive IoC container that lazily instantiates
 any type from standard factories.
 
 # features
-* unobtrusive: leaves no footprint on the code of the modules that are wired together.
-instances are created by standard factories that deconstruct their dependencies
-from a plain javascript object they receive as argument.
-supports the ["program to an interface, not an implementation" (Gang of Four 1995:18)](https://en.wikipedia.org/wiki/Design_Patterns) design paradigm.
-* lazy: instantiates dependencies only when required.
-* fully compatible with any form of module import. does not monkeypatch `require`.
-* fully compatible with minification.
+* **unobtrusive**: minimal footprint on the code of the modules that are wired together.
+instances are created by **standard factories** that deconstruct their dependencies
+from a **plain javascript object** they receive as argument.
+* **lazy**: instantiates dependencies only when required.
+* **fully compatible** with any form of **module import**.
+does not monkeypatch `require`.
+* **fully compatible** with **minification**.
 does not stringify factories to extract dependency names.
-* simply mock dependencies in tests, regardless of test framework,
-without any additional tools.
-* typescript support.
-* tiny: less than 270 bytes gzip.
+* **fully compatible** with any **test framework**.
+simply mock dependencies in tests, without any additional tools.
+* **typescript** support.
+* **tiny**: less than 270 bytes gzip.
 
 # <a name="example"></a> Example
-see the full [example](./example/index.tsx) in this directory.<br/>
+see the full [example](./example/index.ts) in this directory.<br/>
 run the example in your browser locally with `npm run example`
-or [online here](https://cdn.rawgit.com/ZenyWay/basic-ioc-container/v0.2.2/example/index.html).
+or [online here](https://cdn.rawgit.com/ZenyWay/basic-ioc-container/v0.3.0/example/index.html).
 
 `index.ts`:
 ```tsx
 import container from 'basic-ioc-container'
-import serviceFactory, { Service, Db } from './service'
-import dbFactory from './db'
+import serviceFactory, { Service } from './service'
+import dbFactory, { Db } from './db'
 import log from './console'
 const { version: VERSION } = require('../package.json')
 const DB_NAME = 'app-store'
 
+// declare the shape of the IoC container
 interface Container {
   version: string
   service: Service
@@ -39,7 +40,7 @@ interface Container {
   dbname: string
 }
 
-// instantiate a container
+// instantiate a container of the above shape,
 // and retrieve a corresponding factory registration function
 const use = container<Container>()
 // register factories from a map
@@ -60,6 +61,7 @@ service.save({ id: 'doc', foo: 'foo' })
 // alternatively, inject directly (without registering):
 use(({ version }) => log('version:')(version))
 ```
+refer to the [API](#API) section for detailed usage.
 
 `service.ts`:<br/>
 the code for the service factory is not tainted by the DI container implementation:
@@ -127,13 +129,19 @@ export default function ({ dbname }): Db {
 }
 ```
 # <a name="API"></a>API
-
 ```ts
-export default function <C>(container?: Partial<C>): {
-  (): Partial<C>
-  (factories: { [key: string]: (deps: Partial<C>) => any }): Partial<C>
-  <S>(key: string, factory: (deps: Partial<C>) => S): Partial<C>
-  <S>(factory: (deps: Partial<C>) => S): S
+export declare type IoCFactory<C extends object, K extends keyof C> =
+  (deps?: Partial<C>) => C[K]
+
+export declare type IoCFactoryMap<C extends object> = {
+    [K in keyof C]: IoCFactory<C, K>
+}
+
+export default function <C extends object>(container?: Partial<C>): {
+    (): Partial<C>
+    <K extends keyof C>(key: K, factory: IoCFactory<C, K>): Partial<C>
+    (factories: Partial<IoCFactoryMap<C>>): Partial<C>
+    <T>(factory: (deps?: Partial<C>) => T): T
 }
 ```
 
